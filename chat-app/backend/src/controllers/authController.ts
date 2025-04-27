@@ -106,24 +106,46 @@ import generateToken from "../utils/generateToken.js";
 
 const getMeHander = async (req:Request, res:Response) => {
     try {
-        const user = await prisma.user.findUnique({
-            where: {
-                id: req.user.id
-            }
-        })
+        const user = await prisma.user.findUnique({where: {id: req.user.id}});
         if(!user){
-            return res.status(400).json({message: "User not found"})
+            return res.status(400).json({error: "User not found"})
         }
+
         res.status(200).json({
             id: user.id,
             fullName: user.fullName,
             username: user.username,
             profilePic: user.profilePic,
         })
+        
     } catch (error) {
         res.status(500).json({message: "Internal server error"})
     }
 }
 
+const getAllUsersHander = async (req:Request, res:Response) => {
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                id: {
+                    not: req.user.id,
+                },
+            },
+            select: {
+                id: true,
+                fullName: true,
+                username: true,
+                profilePic: true,
+            },
+        });
+        res.status(200).json({
+            message: "All users",
+            users,
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Internal server error" });
+    }
+}
 
-export { registerHander, loginHander, logoutHander , getMeHander };
+
+export { registerHander, loginHander, logoutHander , getMeHander, getAllUsersHander };
