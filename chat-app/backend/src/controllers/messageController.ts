@@ -84,5 +84,26 @@ const getMessages = async (req:Request, res:Response) => {
     }
 }
 
+const getUsersForSidebar = async (req:Request, res:Response) => {
+    try {
+      const authUserId = req.user.id; // Assuming you have user info in req.user
 
-export {sendMessage, getMessages};
+      const users = await prisma.user.findMany({
+        where: {
+          id: {
+            not: authUserId,
+          },
+        },
+        select: {
+          id: true,
+          fullName: true,
+          profilePic: true,
+          },
+      });
+    res.status(200).json(users);
+    } catch (error: any) {
+        console.error('Error fetching messages:', error);
+        res.status(500).json({ error: 'Failed to fetch messages' });
+    }
+}
+export {sendMessage, getMessages, getUsersForSidebar};
